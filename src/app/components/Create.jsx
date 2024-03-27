@@ -1,24 +1,36 @@
 "use client";
 import React from "react";
-import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useState, useEffect } from "react";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import { auth } from "../utils/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import Login from "./Login";
+import Verify from "./Verify";
+import { signOut } from "firebase/auth";
 
 export default function Create() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [createPage, setCreatePage] = useState(false);
+  const [loginPage, setLoginPage] = useState(false);
+  const [verifyPage, setVerifyPage] = useState(false);
   const [message, setMessage] = useState("");
 
   const changePage = async () => {
-    setCreatePage(true);
+    setLoginPage(true);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
+        signOut(auth);
+        sendEmailVerification(auth.currentUser).then(() => {
+          setVerifyPage(true);
+          console.log("Verification email sent");
+        });
         console.log(userCredential);
         setMessage("Account created successfully!");
       })
@@ -45,8 +57,12 @@ export default function Create() {
       });
   };
 
-  if (createPage) {
+  if (loginPage) {
     return <Login />;
+  }
+
+  if (verifyPage) {
+    return <Verify />;
   }
 
   return (
@@ -78,12 +94,13 @@ export default function Create() {
         >
           Create User
         </button>
-        <button
-          onClick={changePage}
-          className="bg-[#708090] text-gray-200 rounded-md px-2 py-1 hover:bg-[#778899]"
-        >
-          <h3 className="text-xs">Login</h3>
-        </button>
+        <div className="flex justify-center">
+          <button onClick={changePage} className="">
+            <h3 className="text-xs font-semibold text-blue-600 hover:text-gray-700">
+              Login
+            </h3>
+          </button>
+        </div>
       </form>
     </div>
   );

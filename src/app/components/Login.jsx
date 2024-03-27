@@ -46,14 +46,18 @@ export default function Login() {
       >
         <h1 className="text-2xl font-bold">Login</h1>
         {message && (
-          <div className="flex gap-24">
-            <p>{message}</p>
-            <button
-              className="bg-red-600 text  text-gray-200 bg rounded-md px-2"
-              onClick={() => setMessage("")}
-            >
-              X
-            </button>
+          <div className="flex justify-between gap-1">
+            <div className="text-sm text-gray-700">
+              <p>{message}</p>
+            </div>
+            <div className="flex justify-center items-center">
+              <button
+                className="bg-red-600 text-white text-xs rounded-md px-1"
+                onClick={() => setMessage("")}
+              >
+                X
+              </button>
+            </div>
           </div>
         )}
         <input
@@ -77,12 +81,13 @@ export default function Login() {
         >
           Login
         </button>
-        <button
-          onClick={changePage}
-          className="bg-[#708090] text-gray-200 rounded-md px-2 py-1 hover:bg-[#778899]"
-        >
-          <h3 className="text-xs">Criar conta</h3>
-        </button>
+        <div className="flex justify-center">
+          <button onClick={changePage} className="">
+            <h3 className="text-xs font-semibold text-blue-600 hover:text-gray-700">
+              Create Account
+            </h3>
+          </button>
+        </div>
       </form>
     </div>
   );
