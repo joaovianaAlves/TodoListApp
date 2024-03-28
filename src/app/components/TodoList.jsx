@@ -1,14 +1,66 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Search from "./Search";
 import { HiOutlineTrash } from "react-icons/hi";
 import { FaCheck } from "react-icons/fa";
 import { useAuth } from "../utils/AuthContext";
 import Login from "./Login";
+import {
+  collection,
+  getDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { db } from "../utils/firebase";
 
-export default function TodoList({ todos, removeTodo, completeTodo }) {
+export default function TodoList() {
+  const [todos, setTodos] = useState([]);
   const [search, setSearch] = useState("");
   const { user, logOut } = useAuth();
+
+  const completeTodo = async (id) => {
+    if (db && user && user.uid) {
+      const todoRef = doc(db, user.uid, id);
+      const todoSnapshot = await getDoc(todoRef);
+      const todoData = todoSnapshot.data();
+      const newIsCompleted = !todoData.isCompleted;
+      await updateDoc(todoRef, { isCompleted: newIsCompleted });
+      const updatedTodos = todos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, isCompleted: newIsCompleted };
+        } else {
+          return todo;
+        }
+      });
+      setTodos(updatedTodos);
+    }
+  };
+
+  const removeTodo = async (id) => {
+    if (db && user && user.uid) {
+      const todoRef = doc(db, user.uid, id);
+      await deleteDoc(todoRef);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTodos = async () => {
+      if (user) {
+        const todoCollection = collection(db, user.uid);
+        const todoSnapshot = await getDocs(todoCollection);
+        const todoList = todoSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log(todoList); // log the fetched todos
+        setTodos(todoList);
+      }
+    };
+
+    fetchTodos();
+  }, [user]);
 
   const handleLogout = () => {
     logOut();
@@ -90,7 +142,7 @@ export default function TodoList({ todos, removeTodo, completeTodo }) {
                       {" "}
                       <button
                         onClick={() => completeTodo(todo.id)}
-                        className={`bg-[#708090] rounded-md px-2 py-1 mr-1 hover:bg-[#778899]`}
+                        className={`bg-[#708090] rounded-md px-2 py-1 mr-1 hover:bg-[#778899] `}
                       >
                         <FaCheck />
                       </button>
